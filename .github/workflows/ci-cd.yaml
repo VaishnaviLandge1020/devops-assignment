@@ -1,0 +1,36 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Build API Gateway
+      run: docker build -t api-gateway:test ./api-gateway
+
+    - name: Build Orders Service
+      run: docker build -t orders-service:test ./orders-service
+
+    - name: Build Inventory Service
+      run: docker build -t inventory-service:test ./inventory-service
+
+    - name: Verify K8s Manifests
+      uses: azure/k8s-set-context@v1
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.KUBE_CONFIG }} 
+      continue-on-error: true 
+      
+    - name: Check Manifest Syntax
+      run: |
+        kubectl apply -f k8s/ --dry-run=client
