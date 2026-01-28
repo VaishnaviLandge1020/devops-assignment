@@ -1,0 +1,23 @@
+name: CI/CD Pipeline
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install PyYAML
+        run: pip install PyYAML
+          
+      - name: Validate YAML Syntax
+        run: |
+          for file in k8s/*.yaml; do
+            echo "Checking $file"
+            python3 -c "import yaml; yaml.safe_load(open('$file'))"
+          done
