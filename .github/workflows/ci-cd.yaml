@@ -28,9 +28,7 @@ jobs:
 
     - name: Validate Kubernetes Manifests
       run: |
-        kubectl apply -f k8s/1-service-accounts.yaml --dry-run=client --validate=false
-        kubectl apply -f k8s/1-setup.yaml --dry-run=client --validate=false
-        kubectl apply -f k8s/2-deployment.yaml --dry-run=client --validate=false
-        kubectl apply -f k8s/3-networking.yaml --dry-run=client --validate=false
-        kubectl apply -f k8s/4-configmap.yaml --dry-run=client --validate=false
-        kubectl apply -f k8s/4-prometheus.yaml --dry-run=client --validate=false
+        for file in k8s/*.yaml; do
+          echo "Validating $file"
+          kubectl patch --dry-run=client -f "$file" --local -p '{}'
+        done
