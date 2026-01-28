@@ -17,12 +17,20 @@ jobs:
       with:
         python-version: '3.9'
 
-    - name: Lint Python Code
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install flake8
+
+    - name: Lint with flake8
+      run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
-    - name: Validate Kubernetes YAML
-      run: 
-        kubectl apply -f k8s/ --dry-run=client --validate=false
+    - name: Validate Kubernetes Manifests
+      run: |
+        kubectl apply -f k8s/1-service-accounts.yaml --dry-run=client --validate=false
+        kubectl apply -f k8s/1-setup.yaml --dry-run=client --validate=false
+        kubectl apply -f k8s/2-deployment.yaml --dry-run=client --validate=false
+        kubectl apply -f k8s/3-networking.yaml --dry-run=client --validate=false
+        kubectl apply -f k8s/4-configmap.yaml --dry-run=client --validate=false
+        kubectl apply -f k8s/4-prometheus.yaml --dry-run=client --validate=false
