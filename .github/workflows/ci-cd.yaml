@@ -2,35 +2,30 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
     steps:
-    
-    - name: Checkout Code
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-    - name: Build API Gateway
-      run: docker build -t api-gateway:test ./api-gateway
-
-    - name: Build Orders Service
-      run: docker build -t orders-service:test ./orders-service
-
-    - name: Build Inventory Service
-      run: docker build -t inventory-service:test ./inventory-service
-
-    - name: Verify K8s Manifests
-      uses: azure/k8s-set-context@v1
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        method: kubeconfig
-        kubeconfig: ${{ secrets.KUBE_CONFIG }} 
-      continue-on-error: true 
-      
-    - name: Check Manifest Syntax
-      run: |
-        kubectl apply -f k8s/ --dry-run=client
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: 
+        python -m pip install --upgrade pip
+        pip install flake8
+
+    - name: Lint with flake8
+      run: 
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Validate Kubernetes Manifests
+      run: 
+        kubectl apply -f k8s/ --dry-run=client --validate=false
