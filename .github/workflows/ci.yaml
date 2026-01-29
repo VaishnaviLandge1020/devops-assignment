@@ -15,9 +15,14 @@ jobs:
       - name: Install PyYAML
         run: pip install PyYAML
           
-      - name: Validate YAML Syntax
+      - name: Validate Kubernetes Manifests
         run: |
-          for file in k8s/*.yaml; do
-            echo "Checking $file"
-            python3 -c "import yaml; yaml.safe_load(open('$file'))"
-          done
+          python3 -c "
+          import yaml, os
+          path = 'k8s'
+          if not os.path.exists(path): path = 'K8s'
+          files = [f for f in os.listdir(path) if f.endswith('.yaml')]
+          for f in files:
+              print(f'Checking {f}...')
+              yaml.safe_load(open(os.path.join(path, f)))
+          "
