@@ -20,9 +20,10 @@ jobs:
           python3 -c "
           import yaml, os
           path = 'k8s'
-          if not os.path.exists(path): path = 'K8s'
           files = [f for f in os.listdir(path) if f.endswith('.yaml')]
           for f in files:
               print(f'Checking {f}...')
-              yaml.safe_load(open(os.path.join(path, f)))
+              with open(os.path.join(path, f), 'r') as s:
+                  # safe_load_all handles files with '---'
+                  list(yaml.safe_load_all(s))
           "
